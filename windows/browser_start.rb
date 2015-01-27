@@ -6,10 +6,10 @@ class BrowserDriver
 
 	@browsers[:chrome] = {
 		:delete => ["C:\\Users\\Administrator\\AppData\\Local"],
-		:executable => "chrome.exe",
+		
 		:versions => {
-					"23.0.0" => {
-							:location => "C:\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data"
+					"40" => {
+							:executable => "C:\\Program Files (x86)\\Google\\Chrome\\Application\\40.0.2214.93\\chrome.exe"
 							}
 					}
 		}
@@ -21,42 +21,66 @@ class BrowserDriver
 					"C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\Windows\\Tempor~1",
 					"C:\\Users\\Administrator\\AppData\\Roaming\\Microsoft\\Windows\\Cookies",
 					"C:\\Users\\Administrator\\AppData\\Roaming\\Macromedia\\Flashp~1"],
-		:executable => "iexplore.exe",
+		
 		:versions => {
 			"8.0.0" => {
-				:location => "iexplore"
+				:executable => "iexplore.exe",
+			},
+			"9.0.0" => {
+				:executable => "iexplore.exe",
+			}
+		}
+
+		
+	}
+
+	@browsers[:firefox] = {
+		:delete => ["C:\\Users\\Administrator\\AppData\\Local\\Mozilla\\Firefox"],
+
+		:versions => {
+			"35.0" => {
+			:executable => "C:\\Program Files (x86)\\firefox 35.0\\firefox.exe"
 			}
 		}
 	}
 
-	@browsers[:firefox] = {
-		:delete => ["C:\\Users\\Administrator\\AppData\\Local\\Mozilla\\Firefox\\Profiles",
-					"C:\\Users\\Administrator\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles"]
-	}
-
 
 	
-
 	def launch(browser_name, browser_version, url_to_launch="http://google.com" ,proxy_url=nil)
+		browser_name = browser_name.to_sym
+		browser_version = browser_version.to_sym
+
 		configure_proxy(proxy_url) if proxy_url
-		case browser_name
-		when "chrome" then system("START #{@browsers[browser_name.to_sym][browser_name][:location]}\\#{browser_version}\\@browsers[browser_name.to_sym][browser_name][:executable] #{url_to_launch}")
-		when "iexplore" then system("START ")
-		else puts "browser not supported"
+		if @browsers.include?(browser_name)
+		  @browser_object = @browsers[browser_name]
+
+		  if @browser_object.include?(browser_version)
+		  	system("START #{@browser_object[browser_version][:executable]}")
+		  else
+		    "browser version not supported"	
+		  	
+		else
+		  "browser not supported"	
 	end
 
-	def stop(browser_name)
-		executable = @browsers[browser_name.to_sym][:executable]
-		system("taskkill /F /IM #{executable} /T")
+	def stop(browser_name, browser_version)
+		browser_name = browser_name.to_sym
+		browser_version = browser_version.to_sym
+
+		if @browsers.include?(browser_name)
+		  executable = File.basename( @browsers[browser_name][browser_version][:executable] )
+		  system("taskkill /F /IM #{executable} /T")
+		else
 	end
 
 	def cleanup(browser_name)
 		browser_name = browser_name.to_sym
+
 		dirs_to_delete = @browsers[browser_name][:delete]
+
 		dirs_to_delete.each do |dir|
 			delete(dir)
 		end
-
 	end
 
 	def delete(dir)
@@ -70,7 +94,6 @@ class BrowserDriver
 		privacy_key = "Software\\Microsoft\\Internet Explorer\\Privacy"
 		Win32::Registry::HKEY_CURRENT_USER.open(privacy_key, Win32::Registry::KEY_WRITE) do |reg|
 			reg["DontClear", Win32::Registry::REG_DWORD] = 00000001
-			
 		end
 
 		# delete all TypedURLs except the default one.
@@ -79,9 +102,6 @@ class BrowserDriver
 		Win32::Registry::HKEY_CURRENT_USER.open(key, Win32::Registry::KEY_WRITE) do |reg|
 			reg.each { |key, value| reg.delete_key(key) if key != "Default" }
 		end
-
-		cookies_key = ""
-
 	end
 
 	def configure_proxy(proxy_url)
