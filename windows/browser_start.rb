@@ -31,7 +31,7 @@ class BrowserDriver
 			}
 		}
 
-		
+
 	}
 
 	@browsers[:firefox] = {
@@ -58,9 +58,10 @@ class BrowserDriver
 		  	system("START #{@browser_object[browser_version][:executable]}")
 		  else
 		    "browser version not supported"	
-		  	
+		  end  	
 		else
 		  "browser not supported"	
+		end
 	end
 
 	def stop(browser_name, browser_version)
@@ -71,6 +72,8 @@ class BrowserDriver
 		  executable = File.basename( @browsers[browser_name][browser_version][:executable] )
 		  system("taskkill /F /IM #{executable} /T")
 		else
+		  nil
+		end
 	end
 
 	def cleanup(browser_name)
