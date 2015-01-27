@@ -1,13 +1,20 @@
 #include <IE.au3>
-;_IECreate("http://google.com")
-;WinWait("Google")
 
-ShellExecute("Firefox" ,"http://google.com")
-winwait("Google")
 
-copyURL()
+$IE_OBJ = _IECreate("http://google.com")
+WinWait("Google")
 
-Func copyURL()
+; Get the URL from IE
+$URL = _IEPropertyGet($IE_OBJ, "locationurl")
+
+;ShellExecute("Firefox" ,"http://google.com")
+;winwait("Google")
+
+;copyURL_With_KS()
+
+
+; Get URL by sending Key Strokes
+Func copyURL_With_KS()
 	
 	Send("{F6}")
 	Send("{CTRLDOWN}")
